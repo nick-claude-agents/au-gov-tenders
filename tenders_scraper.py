@@ -449,7 +449,7 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
         f"AusTender Contacts — {run_date} "
         f"({len(with_emails)} ATMs{new_count_str})"
     )
-    msg["From"] = CONFIG["from_email"]
+    msg["From"] = f"Market Analysis Tool <{CONFIG['from_email']}>"
     msg["To"] = CONFIG["to_email"]
 
     # Inner alternative block for plain/html body

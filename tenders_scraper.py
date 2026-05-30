@@ -437,15 +437,21 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
     plain = "\n".join(text_lines)
 
     new_count_str = f", {len(new_emails)} new" if new_emails else ""
-    msg = MIMEMultipart("alternative")
+
+    # Outer container: mixed (supports both body alternatives + attachment)
+    msg = MIMEMultipart("mixed")
     msg["Subject"] = (
         f"AusTender Contacts — {run_date} "
         f"({len(with_emails)} ATMs{new_count_str})"
     )
     msg["From"] = CONFIG["from_email"]
     msg["To"] = CONFIG["to_email"]
-    msg.attach(MIMEText(plain, "plain"))
-    msg.attach(MIMEText(html, "html"))
+
+    # Inner alternative block for plain/html body
+    body = MIMEMultipart("alternative")
+    body.attach(MIMEText(plain, "plain"))
+    body.attach(MIMEText(html, "html"))
+    msg.attach(body)
 
     # Attach the Excel registry
     registry_path = Path(CONFIG["registry_file"])

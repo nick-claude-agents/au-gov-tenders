@@ -15,6 +15,9 @@ import smtplib
 import logging
 import sys
 from datetime import date as date_type
+from zoneinfo import ZoneInfo
+
+AEST = ZoneInfo("Australia/Sydney")
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -115,7 +118,7 @@ def update_registry(results: list[dict]) -> tuple[set[str], set[str]]:
     Returns (new_emails, known_emails) as sets of lowercase addresses.
     """
     existing = _load_registry()
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(AEST).strftime("%Y-%m-%d")
     new_emails: set[str] = set()
     all_seen: set[str] = set()
 
@@ -339,7 +342,7 @@ async def scrape_all_details(context, urls: list[str]) -> list[dict]:
 
 def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str], password: str):
     """Compose and send the results email, highlighting new email addresses."""
-    run_date = datetime.now().strftime("%d %B %Y")
+    run_date = datetime.now(AEST).strftime("%d %B %Y")
     with_emails = [r for r in results if r["emails"]]
     without_emails = [r for r in results if not r["emails"]]
     all_emails_set = {e for r in with_emails for e in r["emails"]}
@@ -427,7 +430,7 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
 <p style="color:#888;font-size:12px">
   ★ = new contact address not seen in previous runs &nbsp;|&nbsp;
   Registry file: tenders_email_registry.xlsx &nbsp;|&nbsp;
-  Generated {datetime.now().strftime("%Y-%m-%d %H:%M")}
+  Generated {datetime.now(AEST).strftime("%Y-%m-%d %H:%M")}
 </p>
 </body></html>
 """
@@ -487,7 +490,7 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
 
 def generate_html(results: list[dict], new_emails: set[str], new_atm_urls: set[str]) -> str:
     """Build a standalone HTML page listing all current ATM opportunities."""
-    run_dt = datetime.now()
+    run_dt = datetime.now(AEST)
     run_date = run_dt.strftime("%d %B %Y")
     run_ts = run_dt.strftime("%Y-%m-%d %H:%M")
     all_emails_set = {e for r in results for e in r["emails"]}
@@ -598,7 +601,7 @@ def generate_html(results: list[dict], new_emails: set[str], new_atm_urls: set[s
 <header>
   <h1>AusTender Opportunities — {run_date}</h1>
   <p>Scraped from <a href="https://www.tenders.gov.au/Atm" style="color:#7ab" target="_blank">tenders.gov.au</a>
-     &nbsp;|&nbsp; Updated {run_ts} AEST &nbsp;|&nbsp;
+     &nbsp;|&nbsp; Updated {run_ts} {datetime.now(AEST).strftime("%Z")} &nbsp;|&nbsp;
      <a href="https://nick-claude-agents.github.io/au-gov-tenders/" style="color:#7ab">Permalink</a></p>
 </header>
 
@@ -696,7 +699,7 @@ async def main():
         sys.exit(1)
 
     log.info("=" * 60)
-    log.info(f"AusTender scraper starting — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    log.info(f"AusTender scraper starting — {datetime.now(AEST).strftime('%Y-%m-%d %H:%M')}")
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)

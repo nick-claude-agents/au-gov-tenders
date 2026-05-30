@@ -396,7 +396,7 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
 
     html = f"""
 <html><body style="font-family:Arial,sans-serif;font-size:14px;color:#222">
-<h2 style="color:#19473c">AusTender Opportunity Contacts — {run_date}</h2>
+<h2 style="color:#19473c">AusTender Opportunities — {run_date}</h2>
 <p style="margin:8px 0">
   <strong>{len(results)}</strong> ATMs scraped &nbsp;|&nbsp;
   <strong>{len(with_emails)}</strong> with contact emails &nbsp;|&nbsp;
@@ -432,7 +432,7 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
 </body></html>
 """
 
-    text_lines = [f"AusTender Opportunity Contacts — {run_date}", ""]
+    text_lines = [f"AusTender Opportunities — {run_date}", ""]
     if new_emails:
         text_lines += ["NEW EMAILS THIS RUN:", *sorted(new_emails), ""]
     for r in sorted(results, key=lambda x: x["close_date"]["sort"]):
@@ -446,7 +446,7 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
     # Outer container: mixed (supports both body alternatives + attachment)
     msg = MIMEMultipart("mixed")
     msg["Subject"] = (
-        f"AusTender Contacts — {run_date} "
+        f"AusTender Opportunities — {run_date} "
         f"({len(with_emails)} ATMs{new_count_str})"
     )
     msg["From"] = f"Market Analysis Tool <{CONFIG['from_email']}>"
@@ -490,27 +490,31 @@ def generate_html(results: list[dict], new_emails: set[str], new_atm_urls: set[s
     run_dt = datetime.now()
     run_date = run_dt.strftime("%d %B %Y")
     run_ts = run_dt.strftime("%Y-%m-%d %H:%M")
-    with_emails = [r for r in results if r["emails"]]
-    without_emails = [r for r in results if not r["emails"]]
-    all_emails_set = {e for r in with_emails for e in r["emails"]}
+    all_emails_set = {e for r in results for e in r["emails"]}
 
     def esc(s): return html_mod.escape(str(s))
 
+    # All opportunities sorted by close date
     rows = ""
-    for r in sorted(with_emails, key=lambda x: x["atm_id"]):
-        email_cells = []
-        for email in r["emails"]:
-            if email.lower() in new_emails:
-                email_cells.append(
-                    f'<a href="mailto:{esc(email)}" class="email-new" title="New this run">★&nbsp;{esc(email)}</a>'
-                )
-            else:
-                email_cells.append(f'<a href="mailto:{esc(email)}" class="email-link">{esc(email)}</a>')
-        emails_html = "<br>".join(email_cells)
+    for r in sorted(results, key=lambda x: x["close_date"]["sort"]):
         is_new_atm = r["url"] in new_atm_urls
         is_new_email = any(e.lower() in new_emails for e in r["emails"])
         new_row = ' class="row-new"' if (is_new_atm or is_new_email) else ""
         new_badge_html = ' <span class="new-badge">NEW</span>' if is_new_atm else ""
+
+        if r["emails"]:
+            email_cells = []
+            for email in r["emails"]:
+                if email.lower() in new_emails:
+                    email_cells.append(
+                        f'<a href="mailto:{esc(email)}" class="email-new" title="New this run">★&nbsp;{esc(email)}</a>'
+                    )
+                else:
+                    email_cells.append(f'<a href="mailto:{esc(email)}" class="email-link">{esc(email)}</a>')
+            emails_html = "<br>".join(email_cells)
+        else:
+            emails_html = '<em style="color:#aaa">—</em>'
+
         rows += (
             f'<tr{new_row}>'
             f'<td><a href="{r["url"]}" target="_blank" rel="noopener">{esc(r["atm_id"])}</a>{new_badge_html}</td>'
@@ -520,18 +524,7 @@ def generate_html(results: list[dict], new_emails: set[str], new_atm_urls: set[s
             f'<td>{emails_html}</td>'
             f'</tr>\n'
         )
-
-    no_email_rows = ""
-    for r in sorted(without_emails, key=lambda x: x["atm_id"]):
-        no_email_rows += (
-            f'<tr class="row-no-email">'
-            f'<td><a href="{r["url"]}" target="_blank" rel="noopener">{esc(r["atm_id"])}</a></td>'
-            f'<td>{esc(r["agency"])}</td>'
-            f'<td>{esc(r["title"])}</td>'
-            f'<td data-sort="{r["close_date"]["sort"]}">{esc(r["close_date"]["display"])}</td>'
-            f'<td><em style="color:#aaa">none found</em></td>'
-            f'</tr>\n'
-        )
+    no_email_rows = ""  # now merged into main rows
 
     new_banner = ""
     if new_atm_urls or new_emails:
@@ -550,7 +543,7 @@ def generate_html(results: list[dict], new_emails: set[str], new_atm_urls: set[s
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AusTender Opportunities — {run_date}</title>
+<title>AusTender Opportunities — {run_date} </title>
 <style>
   :root {{
     --dark:       #19473c;
@@ -603,7 +596,7 @@ def generate_html(results: list[dict], new_emails: set[str], new_atm_urls: set[s
 </head>
 <body>
 <header>
-  <h1>AusTender — Current Opportunity Contacts</h1>
+  <h1>AusTender Opportunities — {run_date}</h1>
   <p>Scraped from <a href="https://www.tenders.gov.au/Atm" style="color:#7ab" target="_blank">tenders.gov.au</a>
      &nbsp;|&nbsp; Updated {run_ts} AEST &nbsp;|&nbsp;
      <a href="https://nick-claude-agents.github.io/au-gov-tenders/" style="color:#7ab">Permalink</a></p>

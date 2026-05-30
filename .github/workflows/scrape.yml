@@ -3,7 +3,13 @@ name: Daily Tender Scrape
 on:
   schedule:
     - cron: '15 19 * * *'   # 5:15 AM AEST (UTC+10)
-  workflow_dispatch:          # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
 
 jobs:
   scrape:

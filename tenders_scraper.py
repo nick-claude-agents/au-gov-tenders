@@ -18,6 +18,8 @@ from datetime import date as date_type
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 from pathlib import Path
 
 import openpyxl
@@ -444,6 +446,16 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
     msg["To"] = CONFIG["to_email"]
     msg.attach(MIMEText(plain, "plain"))
     msg.attach(MIMEText(html, "html"))
+
+    # Attach the Excel registry
+    registry_path = Path(CONFIG["registry_file"])
+    if registry_path.exists():
+        with open(registry_path, "rb") as f:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(f.read())
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f'attachment; filename="{registry_path.name}"')
+        msg.attach(part)
 
     log.info(f"Sending email to {CONFIG['to_email']}...")
     try:

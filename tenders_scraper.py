@@ -344,35 +344,40 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
     without_emails = [r for r in results if not r["emails"]]
     all_emails_set = {e for r in with_emails for e in r["emails"]}
 
-    # Build table rows — oldest closing date first
+    # Build table rows — ALL opportunities, sorted oldest closing date first
     rows_html = ""
-    for r in sorted(with_emails, key=lambda x: x["close_date"]["sort"]):
-        email_cells = []
-        for email in r["emails"]:
-            if email.lower() in new_emails:
-                email_cells.append(
-                    f"<span style='background:#ffadb5;color:#8b0030;font-weight:bold;"
-                    f"padding:1px 4px;border-radius:3px' title='New contact'>★ {email}</span>"
-                )
-            else:
-                email_cells.append(f"<a href='mailto:{email}'>{email}</a>")
-        emails_html = ", ".join(email_cells)
-
+    td = "padding:4px 8px;border:1px solid #d0e0dc"
+    for r in sorted(results, key=lambda x: x["close_date"]["sort"]):
         is_new_atm = r["url"] in new_atm_urls
         is_new_email = any(e.lower() in new_emails for e in r["emails"])
         row_bg = "#fff3f4" if (is_new_atm or is_new_email) else ""
-        new_label = ""
-        if is_new_atm:
-            new_label = "<span style='background:#ffadb5;color:#8b0030;font-size:11px;font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:6px'>NEW</span>"
         row_style = f"background:{row_bg}" if row_bg else ""
+        new_label = (
+            "<span style='background:#ffadb5;color:#8b0030;font-size:11px;"
+            "font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:6px'>NEW</span>"
+        ) if is_new_atm else ""
+
+        if r["emails"]:
+            email_cells = []
+            for email in r["emails"]:
+                if email.lower() in new_emails:
+                    email_cells.append(
+                        f"<span style='background:#ffadb5;color:#8b0030;font-weight:bold;"
+                        f"padding:1px 4px;border-radius:3px' title='New contact'>★ {email}</span>"
+                    )
+                else:
+                    email_cells.append(f"<a href='mailto:{email}'>{email}</a>")
+            emails_html = ", ".join(email_cells)
+        else:
+            emails_html = "<span style='color:#bbb'>—</span>"
+
         rows_html += (
             f"<tr style='{row_style}'>"
-            f"<td style='padding:4px 8px;border:1px solid #d0e0dc'>"
-            f"<a href='{r['url']}'>{r['atm_id']}</a>{new_label}</td>"
-            f"<td style='padding:4px 8px;border:1px solid #d0e0dc'>{r['agency']}</td>"
-            f"<td style='padding:4px 8px;border:1px solid #d0e0dc'>{r['title']}</td>"
-            f"<td style='padding:4px 8px;border:1px solid #d0e0dc;white-space:nowrap'>{r['close_date']['display']}</td>"
-            f"<td style='padding:4px 8px;border:1px solid #d0e0dc'>{emails_html}</td>"
+            f"<td style='{td}'><a href='{r['url']}'>{r['atm_id']}</a>{new_label}</td>"
+            f"<td style='{td}'>{r['agency']}</td>"
+            f"<td style='{td}'>{r['title']}</td>"
+            f"<td style='{td};white-space:nowrap'>{r['close_date']['display']}</td>"
+            f"<td style='{td}'>{emails_html}</td>"
             f"</tr>\n"
         )
 
@@ -418,7 +423,6 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
 {rows_html}
 </tbody>
 </table>
-{"<p><em>" + str(len(without_emails)) + " ATMs had no contact email.</em></p>" if without_emails else ""}
 <hr/>
 <p style="color:#888;font-size:12px">
   ★ = new contact address not seen in previous runs &nbsp;|&nbsp;
@@ -431,9 +435,10 @@ def send_email(results: list[dict], new_emails: set[str], new_atm_urls: set[str]
     text_lines = [f"AusTender Opportunity Contacts — {run_date}", ""]
     if new_emails:
         text_lines += ["NEW EMAILS THIS RUN:", *sorted(new_emails), ""]
-    for r in sorted(with_emails, key=lambda x: x["close_date"]["sort"]):
+    for r in sorted(results, key=lambda x: x["close_date"]["sort"]):
         marker = "NEW: " if any(e.lower() in new_emails for e in r["emails"]) else "     "
-        text_lines.append(f"{marker}{r['close_date']['display']} | {r['atm_id']} | {r['agency']} | {', '.join(r['emails'])}")
+        emails_str = ", ".join(r["emails"]) if r["emails"] else "no email found"
+        text_lines.append(f"{marker}{r['close_date']['display']} | {r['atm_id']} | {r['agency']} | {emails_str}")
     plain = "\n".join(text_lines)
 
     new_count_str = f", {len(new_emails)} new" if new_emails else ""

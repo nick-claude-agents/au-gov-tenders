@@ -6,54 +6,57 @@
 <title>AusTender Opportunities — 30 May 2026</title>
 <style>
   :root {
-    --dark: #1c1c1c;
-    --gold: #b8860b;
-    --gold-bg: #fffacd;
-    --border: #ddd;
+    --dark:       #19473c;
+    --mid:        #1f735e;
+    --pink:       #ffadb5;
+    --pink-bg:    #fff3f4;
+    --border:     #d0e0dc;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; font-size: 14px; color: #222; background: #f5f5f5; }
+  body { font-family: Arial, sans-serif; font-size: 14px; color: #222; background: #f0f5f4; }
   header { background: var(--dark); color: #fff; padding: 18px 24px; }
   header h1 { font-size: 20px; font-weight: bold; }
-  header p { font-size: 13px; color: #aaa; margin-top: 4px; }
+  header p { font-size: 13px; color: #a8cec7; margin-top: 4px; }
+  header a { color: #a8cec7; }
   .container { max-width: 1400px; margin: 0 auto; padding: 20px 16px; }
   .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
   .stat { background: #fff; border: 1px solid var(--border); border-radius: 6px;
            padding: 10px 18px; text-align: center; }
   .stat strong { display: block; font-size: 22px; color: var(--dark); }
   .stat span { font-size: 12px; color: #888; }
-  .banner-new { background: var(--gold-bg); border-left: 4px solid var(--gold);
+  .banner-new { background: var(--pink-bg); border-left: 4px solid var(--pink);
                  padding: 10px 14px; margin-bottom: 16px; border-radius: 0 6px 6px 0;
                  font-size: 13px; }
   .search-bar { margin-bottom: 12px; }
   .search-bar input { width: 100%; max-width: 400px; padding: 7px 12px;
                        border: 1px solid var(--border); border-radius: 4px; font-size: 14px; }
+  .search-bar input:focus { outline: none; border-color: var(--mid); box-shadow: 0 0 0 2px rgba(31,115,94,0.15); }
   .table-wrap { overflow-x: auto; background: #fff; border-radius: 6px;
                  border: 1px solid var(--border); }
   table { width: 100%; border-collapse: collapse; }
   thead tr { background: var(--dark); color: #fff; }
   th { padding: 9px 10px; text-align: left; font-size: 13px; cursor: pointer; white-space: nowrap; }
-  th:hover { background: #333; }
-  td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+  th:hover { background: var(--mid); }
+  td { padding: 7px 10px; border-bottom: 1px solid #e8f0ee; vertical-align: top; }
   td:nth-child(4) { white-space: nowrap; }
   tr:last-child td { border-bottom: none; }
-  tr.row-new { background: var(--gold-bg); }
-  tr.row-no-email td { color: #999; }
-  tr:hover td { background: #f9f9f9; }
-  tr.row-new:hover td { background: #fff3b0; }
-  a { color: #1a6bb0; text-decoration: none; }
+  tr.row-new { background: var(--pink-bg); }
+  tr.row-no-email td { color: #aaa; }
+  tr:hover td { background: #eef5f3; }
+  tr.row-new:hover td { background: #ffe8ea; }
+  a { color: var(--mid); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .email-new { color: var(--gold); font-weight: bold; }
+  .email-new { color: #c0004a; font-weight: bold; }
   .footer { text-align: center; color: #aaa; font-size: 12px; margin-top: 24px; padding-bottom: 24px; }
   .hidden { display: none; }
-  th .sort-icon { font-size: 10px; margin-left: 4px; opacity: 0.5; }
+  th .sort-icon { font-size: 10px; margin-left: 4px; opacity: 0.6; }
 </style>
 </head>
 <body>
 <header>
   <h1>AusTender — Current Opportunity Contacts</h1>
   <p>Scraped from <a href="https://www.tenders.gov.au/Atm" style="color:#7ab" target="_blank">tenders.gov.au</a>
-     &nbsp;|&nbsp; Updated 2026-05-30 14:25 AEST &nbsp;|&nbsp;
+     &nbsp;|&nbsp; Updated 2026-05-30 14:28 AEST &nbsp;|&nbsp;
      <a href="https://nick-claude-agents.github.io/au-gov-tenders/" style="color:#7ab">Permalink</a></p>
 </header>
 
@@ -171,7 +174,7 @@
   <div class="footer">
     ★ = new contact not seen in previous run &nbsp;|&nbsp;
     Data sourced from <a href="https://www.tenders.gov.au">tenders.gov.au</a> &nbsp;|&nbsp;
-    Generated 2026-05-30 14:25
+    Generated 2026-05-30 14:28
   </div>
 </div>
 

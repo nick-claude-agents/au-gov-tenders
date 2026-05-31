@@ -608,7 +608,7 @@ def generate_html(results: list[dict], new_emails: set[str], new_atm_urls: set[s
 <div class="container">
   <div class="stats">
     <div class="stat"><strong>{len(results)}</strong><span>ATMs scraped</span></div>
-    <div class="stat"><strong>{len(with_emails)}</strong><span>with contact email</span></div>
+    <div class="stat"><strong>{sum(1 for r in results if r["emails"])}</strong><span>with contact email</span></div>
     <div class="stat"><strong>{len(all_emails_set)}</strong><span>unique addresses</span></div>
     <div class="stat"><strong>{len(new_atm_urls) if new_atm_urls else "—"}</strong><span>new opportunities</span></div>
     <div class="stat"><strong>{len(new_emails) if new_emails else "—"}</strong><span>new contacts</span></div>

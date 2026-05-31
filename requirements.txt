@@ -1,2 +1,8 @@
 playwright
 openpyxl
+tzdata
+anthropic
+pdfplumber
+beautifulsoup4
+requests
+flask

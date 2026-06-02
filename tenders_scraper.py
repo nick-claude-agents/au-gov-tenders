@@ -10,6 +10,7 @@ Config: set GMAIL_APP_PASSWORD environment variable, or edit CONFIG below.
 import asyncio
 import html as html_mod
 import json
+import os
 import re
 import smtplib
 import logging
@@ -43,7 +44,10 @@ CONFIG = {
     "registry_file": str(Path(__file__).parent / "tenders_email_registry.xlsx"),
     "known_atms_file": str(Path(__file__).parent / "tenders_known_atms.json"),
     "pages_url": "https://nick-claude-agents.github.io/au-gov-tenders/",
-    "html_file": str(Path(__file__).parent / "index.html"),
+    # In GitHub Actions (the au-gov-tenders repo) write index.html for Pages.
+    # Locally, write tenders_latest.html so we don't clobber the corporate-plans
+    # dashboard's index.html that shares this Dropbox folder.
+    "html_file": str(Path(__file__).parent / ("index.html" if os.environ.get("GITHUB_ACTIONS") else "tenders_latest.html")),
 }
 
 EMAIL_RE = re.compile(r'\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\b')
@@ -207,7 +211,7 @@ async def collect_all_atm_urls(context) -> list[str]:
                 )
 
             links = await page.eval_on_selector_all(
-                "a[href*='/Atm/Show/']",
+                "a[href*='/Atm/Show/'], a[href*='/Advert/Show/']",
                 "els => [...new Set(els.map(e => e.href))].filter(h => !h.includes('#'))"
             )
             new_on_page = 0

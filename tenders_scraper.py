@@ -189,26 +189,47 @@ async def collect_all_atm_urls(context) -> list[str]:
     seen: set[str] = set()
 
     try:
-        # Load first page to find total page count
-        log.info("Loading ATM listing page 1...")
-        await page.goto(CONFIG["listing_url"], wait_until="networkidle",
-                        timeout=CONFIG["page_load_timeout"])
+        # Load first page — retry up to 3 times if site returns empty results
+        for attempt in range(1, 4):
+            log.info(f"Loading ATM listing page 1 (attempt {attempt})...")
+            await page.goto(CONFIG["listing_url"], wait_until="networkidle",
+                            timeout=CONFIG["page_load_timeout"])
 
-        pag_numbers = await page.eval_on_selector_all(
-            ".pagination a",
-            "els => els.map(e => e.textContent.trim()).filter(t => /^\\d+$/.test(t))"
-        )
+            pag_numbers = await page.eval_on_selector_all(
+                ".pagination a",
+                "els => els.map(e => e.textContent.trim()).filter(t => /^\\d+$/.test(t))"
+            )
+            first_page_links = await page.eval_on_selector_all(
+                "a[href*='/Atm/Show/'], a[href*='/Advert/Show/']",
+                "els => [...new Set(els.map(e => e.href))].filter(h => !h.includes('#'))"
+            )
+
+            if first_page_links:
+                break  # Site responded properly
+            if attempt < 3:
+                log.warning(f"Page 1 returned 0 links — retrying in 30s...")
+                await asyncio.sleep(30)
+        else:
+            log.error("Site returned 0 results after 3 attempts — aborting.")
+            return []
+
         total_pages = max((int(n) for n in pag_numbers), default=1)
         log.info(f"Found {total_pages} listing pages")
 
-        for pg in range(1, total_pages + 1):
-            if pg > 1:
-                log.info(f"Loading listing page {pg}/{total_pages}...")
-                await page.goto(
-                    f"{CONFIG['listing_url']}?page={pg}",
-                    wait_until="networkidle",
-                    timeout=CONFIG["page_load_timeout"],
-                )
+        # Add page 1 links
+        for link in first_page_links:
+            if link not in seen:
+                seen.add(link)
+                all_urls.append(link)
+        log.info(f"  Page 1: {len(first_page_links)} new ATM URLs (total: {len(all_urls)})")
+
+        for pg in range(2, total_pages + 1):
+            log.info(f"Loading listing page {pg}/{total_pages}...")
+            await page.goto(
+                f"{CONFIG['listing_url']}?page={pg}",
+                wait_until="networkidle",
+                timeout=CONFIG["page_load_timeout"],
+            )
 
             links = await page.eval_on_selector_all(
                 "a[href*='/Atm/Show/'], a[href*='/Advert/Show/']",
@@ -726,6 +747,10 @@ async def main():
         results = await scrape_all_details(context, urls)
 
         await browser.close()
+
+    if not urls:
+        log.error("No URLs collected after retries — skipping update to avoid overwriting good data.")
+        sys.exit(1)
 
     # Persist current URL set for next run's comparison
     save_known_atm_urls(urls)

@@ -43,7 +43,7 @@ CONFIG = {
     "log_file": str(Path(__file__).parent / "tenders_scraper.log"),
     "registry_file": str(Path(__file__).parent / "tenders_email_registry.xlsx"),
     "known_atms_file": str(Path(__file__).parent / "tenders_known_atms.json"),
-    "pages_url": "https://nick-claude-agents.github.io/au-gov-tenders/",
+    "pages_url": "https://parbery.appromptu.com/feeds/tenders",
     # In GitHub Actions (the au-gov-tenders repo) write index.html for Pages.
     # Locally, write tenders_latest.html so we don't clobber the corporate-plans
     # dashboard's index.html that shares this Dropbox folder.
@@ -627,7 +627,7 @@ def generate_html(results: list[dict], new_emails: set[str], new_atm_urls: set[s
   <h1>AusTender Opportunities — {run_date}</h1>
   <p>Scraped from <a href="https://www.tenders.gov.au/Atm" style="color:#7ab" target="_blank">tenders.gov.au</a>
      &nbsp;|&nbsp; Updated {run_ts} {datetime.now(AEST).strftime("%Z")} &nbsp;|&nbsp;
-     <a href="https://nick-claude-agents.github.io/au-gov-tenders/" style="color:#7ab">Permalink</a></p>
+     <a href="https://parbery.appromptu.com/feeds/tenders" style="color:#7ab">Permalink</a></p>
 </header>
 
 <div class="container">
